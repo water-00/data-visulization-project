@@ -2,7 +2,7 @@
 
 如果无法访问国外网站，必应搜索“如何配置clash for windows”，下载并配置好
 
-如果要买clash节点：https://yuritele.com/，一个我觉得很便宜的网站，选20元 128GB/年 即可
+如果要买clash节点：https://yuritele.com/ ，一个我觉得很便宜的网站，选20元 128GB/年 即可
 
 基于清华大学“全国城市空气质量数据可视化、全球气温变化温室气体排放可视化及分析”项目（主要是后者）做一个全球环境数据可视化图
 
@@ -47,6 +47,6 @@
 
 点击github页面右边的链接可以直接访问仓库对应的可运行的demo/网站
 
-- https://github.com/bartromgens/climatemaps，一个动态的气象地图，有各种炫酷的功能
-- https://github.com/MaayanLab/clustergrammer，炫酷的动态heatmap，做heatmap时可参考效果
-- https://github.com/arnauddri/d3-stock，信息、形式都比较丰富的股票折线图
+- https://github.com/bartromgens/climatemaps ，一个动态的气象地图，有各种炫酷的功能
+- https://github.com/MaayanLab/clustergrammer ，炫酷的动态heatmap，做heatmap时可参考效果
+- https://github.com/arnauddri/d3-stock ，信息、形式都比较丰富的股票折线图

@@ -65,11 +65,11 @@
 
 3. 实现缩放功能，包括滚轮缩放、选中某一时间范围则将该时间范围内的折线图作为svg显示的全部内容，添加过渡动画；实现RESET按钮
 
-   参考：https://climate.nasa.gov/vital-signs/ocean-warming/，或者https://cg.cs.tsinghua.edu.cn/course/vis/portfolio.html 中"全球气温变化温室气体排放可视化及分析"这个项目中折线图选择区域的方式
+   参考：https://climate.nasa.gov/vital-signs/ocean-warming/ ，或者https://cg.cs.tsinghua.edu.cn/course/vis/portfolio.html 中"全球气温变化温室气体排放可视化及分析"这个项目中折线图选择区域的方式
 
 4. 整合更多图表到折线图中，实现直接显示不同时间尺度的按钮（比如x方向的时间尺度为day, month, half year, year, decade显示等等）
 
-   参考：https://github.com/arnauddri/d3-stock/，这个项目给的demo链接不太行，建议自己clone到本地运行index.html
+   参考：https://github.com/arnauddri/d3-stock/ ，这个项目给的demo链接不太行，建议自己clone到本地运行index.html
 
    ![image-20231124213112986](md_img/image-20231124213112986.png)
 

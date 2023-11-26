@@ -1,28 +1,16 @@
 let svg = d3.select('svg');
 const width = +svg.attr('width');
 const height = +svg.attr('height');
-const margin = { top: 0, right: 0, bottom: 0, left: 0 };
+const margin = { top: 0, right: 0, bottom: 0, left: -800 };
 const innerWidth = width - margin.left - margin.right;
 const innerHeight = height - margin.top - margin.bottom;
+svg.attr('transform', `translate(${margin.left}, ${margin.top})`);
 const g = svg.append('g').attr('id', 'maingroup')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
+    // .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
 
 // convert dataPath to svgPath; 
 // go to https://github.com/d3/d3-geo for more different projections; 
-// const projection = d3.geoAzimuthalEquidistant(); // 方位角等距离投影。
-// const projection = d3.geoEqualEarth(); // Bojan Šavrič et al., 2018.
-// const projection = d3.geoOrthographic(); // 方位角正交投影。
-// const projection = d3.geoAzimuthalEqualArea(); // Lambert等面积方位角投影。
-// const projection = d3.geoStereographic(); // 球极平面投影。
-
-// const projection = d3.geoConicEqualArea(); // 亚尔勃斯等面积投影
-// const projection = d3.geoConicEquidistant(); // 圆锥等距投影
-// const projection =  d3.geoConicConformal().parallels([35, 65]).rotate([0, 0])
-// .scale(width / 13.5).center([0, 0]).translate([width / 2, height / 2]).precision(0.2); //Lambert圆锥等角投影
-// const projection = d3.geoHill(); // 伪圆锥等面积投影。
-
-// const projection = d3.geoCylindricalEqualArea(); // Lambert等面积圆柱投影。
-// const projection = d3.geoCraster(); // 正弦曲线等面积伪圆柱投影。
 const projection = d3.geoMercator(); // 墨卡托投影。
 // const projection = d3.geoNaturalEarth1(); // Natural Earth Projection
 // const projection = d3.geoEquirectangular(); // Plate Carrée投影（等距）
@@ -39,7 +27,6 @@ let lastid = undefined;
 d3.json('data/countries-110m.json').then(function (data) {
     // convert topo-json to geo-json; 
     worldmeta = topojson.feature(data, data.objects.countries);
-    console.log(worldmeta)
 
     // this code is really important if you want to fit your geoPaths (map) in your SVG element; 
     projection.fitSize([innerWidth, innerHeight], worldmeta);
@@ -85,7 +72,7 @@ d3.json('data/countries-110m.json').then(function (data) {
 
 });
 
-d3.csv('data/kaggle/cities-info.csv').then(function (data) {
+d3.csv('data/kaggle/processed/major-cities-info.csv').then(function (data) {
     const paths = g.selectAll('.city-point')
         .data(data)
         .enter().append('circle')
@@ -103,5 +90,46 @@ d3.csv('data/kaggle/cities-info.csv').then(function (data) {
         .on('mouseout', function () {
             // 处理鼠标移出时的逻辑，例如隐藏城市站信息
         });
+    g.selectAll('.city-point').attr('display', 'none');
 });
 
+
+let dragStartCoords = [0, 0];
+let currentCoords = [margin.left, margin.top]; // 现在相对于程序刚开始时的偏移
+let offset = [0, 0];
+
+// 添加zoom
+svg.call(d3.zoom()
+    .scaleExtent([1, 8])
+    .on("zoom", zoomed));
+
+function zoomed(event) {
+    const currentScale = event.transform.k;
+
+    if (currentScale > 2) {
+        g.selectAll('.city-point').attr('display', 'block');
+    } else {
+        g.selectAll('.city-point').attr('display', 'none');
+    }
+
+    g.attr("transform", event.transform);
+}
+
+// 添加drag-drop
+svg.call(d3.drag()
+    .on('start', dragStart)
+    .on('drag', dragging)
+    .on('end', dragEnd));
+
+function dragStart(event) {
+    dragStartCoords = [event.x, event.y];
+}
+
+function dragging(event) {
+    offset = [event.x - dragStartCoords[0], event.y - dragStartCoords[1]];
+    svg.attr('transform', `translate(${currentCoords[0] + offset[0]}, ${currentCoords[1] + offset[1]})`);
+}
+
+function dragEnd() {
+    currentCoords = [currentCoords[0] + offset[0], currentCoords[1] + offset[1]]
+}

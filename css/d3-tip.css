@@ -1,12 +1,16 @@
 .d3-tip {
   font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.4;
-  padding: 20px;
+  line-height: 1.6;
+  font-size: 12px;
+  /* 减小字体大小 */
+  padding: 8px 12px;
+  /* 根据字体大小减小内边距 */
   pointer-events: none !important;
   color: #203d5d;
-  box-shadow: 0 4px 20px 4px rgba(0, 20, 60, .1), 0 4px 80px -8px rgba(0, 20, 60, .2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.15);
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 6px;
+  border: 1px solid #d4d4d4;
 }
 
 /* Creates a small triangle extender for the tooltip */
@@ -16,7 +20,7 @@
   font-size: 10px;
   width: 100%;
   line-height: 1;
-  color: #fff;
+  color: #203d5d;
   position: absolute;
   pointer-events: none;
 }
@@ -26,7 +30,8 @@
   content: "▼";
   margin: -1px 0 0 0;
   top: 100%;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
 }
 
@@ -43,7 +48,8 @@
   content: "▲";
   margin: 0 0 1px 0;
   top: -8px;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
 }
 

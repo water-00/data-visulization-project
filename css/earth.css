@@ -4,8 +4,8 @@ body {
 }
 
 path {
-    fill: rgb(110, 149, 221);
-    stroke: rgb(29, 25, 25);
+    /* fill: rgb(110, 149, 221);
+    stroke: rgb(29, 25, 25); */
     stroke-opacity: 0.1;
     cursor: move;
 }

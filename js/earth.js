@@ -22,11 +22,10 @@ const tip = d3.tip()
 svg.call(tip);
 
 let worldmeta;
-let lastid = undefined;
 
-d3.json('data/countries-110m.json').then(function (data) {
+d3.json('data/countries-110m.json').then(function (geo_data) {
     // convert topo-json to geo-json; 
-    worldmeta = topojson.feature(data, data.objects.countries);
+    worldmeta = topojson.feature(geo_data, geo_data.objects.countries);
 
     // this code is really important if you want to fit your geoPaths (map) in your SVG element; 
     projection.fitSize([innerWidth, innerHeight], worldmeta);
@@ -44,7 +43,6 @@ d3.json('data/countries-110m.json').then(function (data) {
                 .attr("stroke", "white")
                 .attr("stroke-width", 6);
             tip.show(event, d);
-            lastid = d.properties.name;
         })
         .on('mouseout', function (event, d) {
             d3.select(this)
@@ -52,18 +50,10 @@ d3.json('data/countries-110m.json').then(function (data) {
                 .attr("stroke", "black")
                 .attr("stroke-width", 1);
             tip.hide(event, d)
-            lastid = -lastid
         })
         .on('contextmenu', function (event, d) {
             // 按下右键逻辑
             // event.preventDefault(); // 防止浏览器执行右键的默认行为
-            // if (lastid !== d.properties.name) {
-            //     tip.show(event, d)
-            //     lastid = d.properties.name;
-            // } else {
-            //     tip.hide(event, d)
-            //     lastid = -lastid
-            // }
         })
         .on('click', function (event, d) {
             // 处理左键点击的逻辑
@@ -82,7 +72,7 @@ d3.csv('data/kaggle/processed/major-cities-info.csv').then(function (data) {
         .attr('r', 2) // 你可以调整圆圈的大小
         .attr('fill', 'red')
         .attr('stroke', 'black')
-        .attr('stroke-width', 1)
+        .attr('stroke-width', 0.6)
         .on('mouseover', function (event, d) {
             // 处理鼠标悬停时的逻辑，例如显示城市站信息
             console.log('Mouseover on city:', d.City);
@@ -105,7 +95,6 @@ svg.call(d3.zoom()
 
 function zoomed(event) {
     const currentScale = event.transform.k;
-
     if (currentScale > 2) {
         g.selectAll('.city-point').attr('display', 'block');
     } else {

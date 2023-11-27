@@ -27,10 +27,13 @@ svg.call(tip);
 let worldmeta;
 // 读取国家温度数据
 d3.csv('data/kaggle/processed/countries-avg-temperature.csv').then(function (tempData) {
-    // 先获取温度数据的范围
+   // 获取整个数据集的温度范围
     const temperatureExtent = d3.extent(tempData, d => +d.AverageTemperature);
-    // 创建一个颜色比例尺
+    // 创建一个颜色比例尺，这里我们使用d3.interpolateRdYlBu并根据整个数据集的范围进行反转
     colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain(temperatureExtent.reverse());
+
+    // 现在我们过滤出6月份的数据
+    tempData = tempData.filter(d => d.dt.includes('-12-'));
 
     // 用颜色比例尺为国家上色
     tempData.forEach(function (d) {
@@ -102,7 +105,7 @@ function drawLegend() {
         .attr('transform', 'translate(' + legendMargin.left + ',' + legendMargin.top + ')');
 
     const legendScale = d3.scaleLinear()
-        .domain(d3.extent(colorScale.domain()))
+        .domain(d3.extent(colorScale.domain()).reverse())
         .range([0, legendWidth]);
 
     legendSvg.append("defs")

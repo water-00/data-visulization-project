@@ -25,22 +25,95 @@ const tip = d3.tip()
 svg.call(tip);
 
 let worldmeta;
+
+function updateMapColors() {
+    g.selectAll('path')
+        .attr('fill', d => {
+            const avgTemp = tempMap[d.properties.name];
+            return avgTemp ? colorScale(avgTemp) : '#ccc';
+        });
+}
+
+
+function loadDataForMonth(month) {
+    // 将数字月份转换为 '-1-' 这样的字符串格式
+    const monthString = month < 10 ? `-0${month}-` : `-${month}-`;
+    console.log(monthString)
+    d3.csv('data/kaggle/processed/countries-avg-temperature.csv').then(tempData => {
+
+        // 获取整个数据集的温度范围
+        const temperatureExtent = d3.extent(tempData, d => +d.AverageTemperature);
+        // 创建一个颜色比例尺，这里我们使用d3.interpolateRdYlBu并根据整个数据集的范围进行反转
+        colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain(temperatureExtent.reverse());
+
+        // 现在我们过滤出month的数据
+        tempData = tempData.filter(d => d.dt.includes(monthString));
+
+        console.log(tempData)
+        // 用颜色比例尺为国家上色
+        tempData.forEach(function (d) {
+            tempMap[d.Country] = +d.AverageTemperature;
+        });
+        console.log(tempMap)
+
+        d3.json('data/countries-110m.json').then(function (geoData) {
+            console.log('hi\nhi\nhi\n')
+            // convert topo-json to geo-json; 
+            worldmeta = topojson.feature(geoData, geoData.objects.countries);
+
+            // this code is really important if you want to fit your geoPaths (map) in your SVG element; 
+            projection.fitSize([innerWidth, innerHeight], worldmeta);
+
+            // perform data-join; 
+            const paths = g.selectAll('path')
+                .data(worldmeta.features, d => d.properties.name)
+                .enter().append('path')
+                .attr('d', pathGenerator)
+                .attr('stroke', 'black')
+                .attr('stroke-width', 1)
+                // .attr('fill', '#ccc')
+                // .attr('fill', d => {
+                //     const avgTemp = tempMap[d.properties.name];
+                //     console.log(d.properties.name, avgTemp)
+                //     return avgTemp ? colorScale(avgTemp) : '#ccc'; // 如果没有数据则使用灰色
+                // })
+                .on('mouseover', function (event, d) {
+                    d3.select(this)
+                        .attr("opacity", 0.5)
+                        .attr("stroke", "white")
+                        .attr("stroke-width", 6);
+                    tip.show(event, d);
+                })
+                .on('mouseout', function (event, d) {
+                    d3.select(this)
+                        .attr("opacity", 1)
+                        .attr("stroke", "black")
+                        .attr("stroke-width", 1);
+                    tip.hide(event, d)
+                })
+                .on('contextmenu', function (event, d) {
+                    // 按下右键逻辑
+                    // event.preventDefault(); // 防止浏览器执行右键的默认行为
+                })
+                .on('click', function (event, d) {
+                    // 处理左键点击的逻辑
+                    console.log('Left click on', d.properties.name);
+                });
+
+            updateMapColors(); // 更新地图颜色
+
+        });
+    });
+}
+
+function updateMap(tempData) {
+    // 根据 data 更新地图
+    // 这里的代码取决于地图的具体实现，可能包括更改颜色、添加工具提示等
+}
+
 // 读取国家温度数据
 d3.csv('data/kaggle/processed/countries-avg-temperature.csv').then(function (tempData) {
-   // 获取整个数据集的温度范围
-    const temperatureExtent = d3.extent(tempData, d => +d.AverageTemperature);
-    // 创建一个颜色比例尺，这里我们使用d3.interpolateRdYlBu并根据整个数据集的范围进行反转
-    colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain(temperatureExtent.reverse());
 
-    // 现在我们过滤出12月份的数据
-    tempData = tempData.filter(d => d.dt.includes('-12-'));
-
-    // 用颜色比例尺为国家上色
-    tempData.forEach(function (d) {
-        tempMap[d.Country] = +d.AverageTemperature;
-    });
-
-    drawMap().then(drawLegend); // 确保先绘制地图，然后绘制图例
 });
 
 function drawMap() {
@@ -49,48 +122,6 @@ function drawMap() {
 }
 
 
-d3.json('data/countries-110m.json').then(function (geoData) {
-    // convert topo-json to geo-json; 
-    worldmeta = topojson.feature(geoData, geoData.objects.countries);
-
-    // this code is really important if you want to fit your geoPaths (map) in your SVG element; 
-    projection.fitSize([innerWidth, innerHeight], worldmeta);
-
-    // perform data-join; 
-    const paths = g.selectAll('path')
-        .data(worldmeta.features, d => d.properties.name)
-        .enter().append('path')
-        .attr('d', pathGenerator)
-        .attr('stroke', 'black')
-        .attr('stroke-width', 1)
-        .attr('fill', d => {
-            const avgTemp = tempMap[d.properties.name];
-            return avgTemp ? colorScale(avgTemp) : '#ccc'; // 如果没有数据则使用灰色
-        })
-        .on('mouseover', function (event, d) {
-            d3.select(this)
-                .attr("opacity", 0.5)
-                .attr("stroke", "white")
-                .attr("stroke-width", 6);
-            tip.show(event, d);
-        })
-        .on('mouseout', function (event, d) {
-            d3.select(this)
-                .attr("opacity", 1)
-                .attr("stroke", "black")
-                .attr("stroke-width", 1);
-            tip.hide(event, d)
-        })
-        .on('contextmenu', function (event, d) {
-            // 按下右键逻辑
-            // event.preventDefault(); // 防止浏览器执行右键的默认行为
-        })
-        .on('click', function (event, d) {
-            // 处理左键点击的逻辑
-            console.log('Left click on', d.properties.name);
-        });
-
-});
 
 function drawLegend() {
     const legendWidth = 300;
@@ -202,7 +233,8 @@ function dragEnd() {
     };
     var state = {
         selectedMonth: 1,
-        animationRunning: false
+        animationRunning: false,
+        animationInterval: {}
         // Add more state variables as needed
     };
 
@@ -210,6 +242,8 @@ function dragEnd() {
     function init() {
         createMonthSlider();
         attachAnimateButtonEvent();
+        updateMapForMonth(1);
+        drawMap().then(drawLegend); // 确保先绘制地图，然后绘制图例
         // Add any other initialization logic here
     }
 
@@ -253,22 +287,33 @@ function dragEnd() {
     function updateMapForMonth(month) {
         console.log("Update map for month: " + month);
         // Add logic to update the map
+        loadDataForMonth(month)
     }
 
     // Start map animation
     function startAnimation() {
-        state.animationRunning = true;
-        console.log("Start animation");
-        // Add logic to start animation
+        if (!state.animationRunning) {
+            state.animationRunning = true;
+            console.log("Start animation");
+            // 开始动画，每隔5秒更新地图
+            state.animationInterval = setInterval(function () {
+                state.selectedMonth++;
+                if (state.selectedMonth > 12) {
+                    state.selectedMonth = 1; // 如果超过12月，则重新开始
+                }
+                updateMapForMonth(state.selectedMonth);
+                $("#month-slider").slider('value', state.selectedMonth - 1); // 更新滑块的位置
+            }, 2000); // 每隔5秒更新一次
+        }
     }
-
     // Stop map animation
     function stopAnimation() {
-        state.animationRunning = false;
-        console.log("Stop animation");
-        // Add logic to stop animation
+        if (state.animationRunning) {
+            clearInterval(state.animationInterval); // 停止定时器
+            state.animationRunning = false;
+            console.log("Stop animation");
+        }
     }
-
     // Document ready event
     $(document).ready(function () {
         init();

@@ -10,6 +10,48 @@ path {
     cursor: move;
 }
 
-/* .svgs {
+#slider-container {
+    position: absolute;
+    bottom: 0;
+    width: 65%;
+    justify-content: space-between; /* 内容平均分布 */
+    margin: 0px 385px;
+    padding: 1px; /* 减小padding减少白色空间 */
+    background-color: #fff; /* 或任何您喜欢的颜色 */
+    border-radius: 10px; /* 添加圆角 */
+}
 
-} */
+#month-slider {
+    flex-grow: 1; /* 滑块占据剩余空间 */
+    width: 80%;
+    margin-top: 10px;
+    margin-bottom: 23px;
+    margin-left: 30px;
+}
+#animate-button {
+    position: absolute;
+    padding: 5px 20px;
+    background-color: #0066cc;
+    margin: -40px 695px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    /* 保持按钮大小，不设置flex-grow */
+}
+
+
+.slider-label {
+    position: absolute;
+    /* 绝对定位 */
+    bottom: -20px;
+    /* 根据实际情况调整，将标签下移以放置在滑块下方 */
+    white-space: nowrap;
+    /* 防止标签换行 */
+    display: block;
+    /* 将标签转换为块元素以应用左偏移量 */
+    text-align: center;
+    /* 文本居中 */
+    transform: translateX(-50%);
+    /* 修正标签位置，使其居中对齐 */
+}

@@ -32,7 +32,7 @@ d3.csv('data/kaggle/processed/countries-avg-temperature.csv').then(function (tem
     // 创建一个颜色比例尺，这里我们使用d3.interpolateRdYlBu并根据整个数据集的范围进行反转
     colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain(temperatureExtent.reverse());
 
-    // 现在我们过滤出6月份的数据
+    // 现在我们过滤出12月份的数据
     tempData = tempData.filter(d => d.dt.includes('-12-'));
 
     // 用颜色比例尺为国家上色
@@ -95,7 +95,7 @@ d3.json('data/countries-110m.json').then(function (geoData) {
 function drawLegend() {
     const legendWidth = 300;
     const legendHeight = 20;
-    const legendMargin = { top: 10, right: 60, bottom: 30, left: 60 };
+    const legendMargin = { top: 10, right: 60, bottom: 25, left: 48 };
 
     const legendSvg = d3.select('body').append('svg')
         .attr('width', legendWidth + legendMargin.left + legendMargin.right)
@@ -191,3 +191,87 @@ function dragging(event) {
 function dragEnd() {
     currentCoords = [currentCoords[0] + offset[0], currentCoords[1] + offset[1]]
 }
+
+(function () {
+    'use strict';
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // Configuration and state variables
+    var config = {
+        // Add your configuration variables here
+    };
+    var state = {
+        selectedMonth: 1,
+        animationRunning: false
+        // Add more state variables as needed
+    };
+
+    // Initialization function
+    function init() {
+        createMonthSlider();
+        attachAnimateButtonEvent();
+        // Add any other initialization logic here
+    }
+
+    // Create month slider with jQuery UI
+    function createMonthSlider() {
+        $("#month-slider").slider({
+            min: 0, // 由于数组是从0开始的，因此最小值应该是0
+            max: 11, // 12个月，但是索引是从0开始的，所以最大值是11
+            value: state.selectedMonth - 1, // 将选中的月份减1以对应数组索引
+            create: function (event, ui) {
+                var slider = $(this);
+                var width = slider.width(); // 获取滑块的宽度
+                var handleWidth = slider.find('.ui-slider-handle').width(); // 获取handle的宽度
+                // 创建时为每个月份添加标签
+                months.forEach(function (month, index) {
+                    // 计算每个标签的左偏移量
+                    var left = (width / 11) * index - (handleWidth / 2) + 7;
+                    var label = $('<label>').addClass('slider-label').text(month).css('left', left);
+                    slider.append(label);
+                });
+            },
+            slide: function (event, ui) {
+                state.selectedMonth = ui.value + 1; // 加1因为你的状态是从1到12
+                updateMapForMonth(ui.value + 1); // 更新地图的函数也需要加1
+            }
+        });
+    }
+
+    // Attach event to the animate button
+    function attachAnimateButtonEvent() {
+        $("#animate-button").click(function () {
+            if (!state.animationRunning) {
+                startAnimation();
+            } else {
+                stopAnimation();
+            }
+        });
+    }
+
+    // Update map based on selected month
+    function updateMapForMonth(month) {
+        console.log("Update map for month: " + month);
+        // Add logic to update the map
+    }
+
+    // Start map animation
+    function startAnimation() {
+        state.animationRunning = true;
+        console.log("Start animation");
+        // Add logic to start animation
+    }
+
+    // Stop map animation
+    function stopAnimation() {
+        state.animationRunning = false;
+        console.log("Stop animation");
+        // Add logic to stop animation
+    }
+
+    // Document ready event
+    $(document).ready(function () {
+        init();
+    });
+
+})();

@@ -38,7 +38,6 @@ function updateMapColors() {
 function loadDataForMonth(month) {
     // 将数字月份转换为 '-1-' 这样的字符串格式
     const monthString = month < 10 ? `-0${month}-` : `-${month}-`;
-    console.log(monthString)
     d3.csv('data/kaggle/processed/countries-avg-temperature.csv').then(tempData => {
 
         // 获取整个数据集的温度范围
@@ -49,15 +48,12 @@ function loadDataForMonth(month) {
         // 现在我们过滤出month的数据
         tempData = tempData.filter(d => d.dt.includes(monthString));
 
-        console.log(tempData)
         // 用颜色比例尺为国家上色
         tempData.forEach(function (d) {
             tempMap[d.Country] = +d.AverageTemperature;
         });
-        console.log(tempMap)
 
         d3.json('data/countries-110m.json').then(function (geoData) {
-            console.log('hi\nhi\nhi\n')
             // convert topo-json to geo-json; 
             worldmeta = topojson.feature(geoData, geoData.objects.countries);
 
@@ -71,12 +67,6 @@ function loadDataForMonth(month) {
                 .attr('d', pathGenerator)
                 .attr('stroke', 'black')
                 .attr('stroke-width', 1)
-                // .attr('fill', '#ccc')
-                // .attr('fill', d => {
-                //     const avgTemp = tempMap[d.properties.name];
-                //     console.log(d.properties.name, avgTemp)
-                //     return avgTemp ? colorScale(avgTemp) : '#ccc'; // 如果没有数据则使用灰色
-                // })
                 .on('mouseover', function (event, d) {
                     d3.select(this)
                         .attr("opacity", 0.5)
@@ -106,22 +96,10 @@ function loadDataForMonth(month) {
     });
 }
 
-function updateMap(tempData) {
-    // 根据 data 更新地图
-    // 这里的代码取决于地图的具体实现，可能包括更改颜色、添加工具提示等
-}
-
-// 读取国家温度数据
-d3.csv('data/kaggle/processed/countries-avg-temperature.csv').then(function (tempData) {
-
-});
-
 function drawMap() {
     // 读取国家边界数据
     return d3.json('data/countries-110m.json').then(function (geoData) {})
 }
-
-
 
 function drawLegend() {
     const legendWidth = 300;
@@ -163,27 +141,28 @@ function drawLegend() {
 }
 
 
-
-d3.csv('data/kaggle/processed/major-cities-info.csv').then(function (data) {
-    const paths = g.selectAll('.city-point')
-        .data(data)
-        .enter().append('circle')
-        .attr('class', 'city-point')
-        .attr('cx', function (d) { return projection([d.Longitude, d.Latitude])[0]; })
-        .attr('cy', function (d) { return projection([d.Longitude, d.Latitude])[1]; })
-        .attr('r', 2) // 你可以调整圆圈的大小
-        .attr('fill', 'red')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.6)
-        .attr('display', 'none')
-        .on('mouseover', function (event, d) {
-            // 处理鼠标悬停时的逻辑，例如显示城市站信息
-            console.log('Mouseover on city:', d.City);
-        })
-        .on('mouseout', function () {
-            // 处理鼠标移出时的逻辑，例如隐藏城市站信息
-        });
-});
+function drawCity() {
+    // console.log('hi');
+    // d3.csv('data/kaggle/processed/major-cities-info.csv').then(function (data) {
+    //     const paths = g.selectAll('.city-point')
+    //         .data(data)
+    //         .enter().append('circle')
+    //         .attr('class', 'city-point')
+    //         .attr('cx', function (d) { return projection([d.Longitude, d.Latitude])[0]; })
+    //         .attr('cy', function (d) { return projection([d.Longitude, d.Latitude])[1]; })
+    //         .attr('r', 2) // 你可以调整圆圈的大小
+    //         .attr('fill', 'red')
+    //         .attr('stroke', 'black')
+    //         .attr('stroke-width', 0.6)
+    //         .on('mouseover', function (event, d) {
+    //             // 处理鼠标悬停时的逻辑，例如显示城市站信息
+    //             console.log('Mouseover on city:', d.City);
+    //         })
+    //         .on('mouseout', function () {
+    //             // 处理鼠标移出时的逻辑，例如隐藏城市站信息
+    //         });
+    // });
+}
 
 
 let dragStartCoords = [0, 0];
@@ -199,7 +178,7 @@ function zoomed(event) {
     const currentScale = event.transform.k;
 
     g.selectAll('.city-point')
-        .attr('display', currentScale > 2 ? 'block' : 'none')
+        // .attr('display', currentScale > 2 ? 'block' : 'none')
 
     g.attr("transform", event.transform);
 }
@@ -244,6 +223,7 @@ function dragEnd() {
         attachAnimateButtonEvent();
         updateMapForMonth(1);
         drawMap().then(drawLegend); // 确保先绘制地图，然后绘制图例
+        drawCity();
         // Add any other initialization logic here
     }
 
@@ -303,7 +283,7 @@ function dragEnd() {
                 }
                 updateMapForMonth(state.selectedMonth);
                 $("#month-slider").slider('value', state.selectedMonth - 1); // 更新滑块的位置
-            }, 2000); // 每隔5秒更新一次
+            }, 1000);
         }
     }
     // Stop map animation

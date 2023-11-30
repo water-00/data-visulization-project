@@ -35,10 +35,11 @@ function updateMapColors() {
 }
 
 
-function loadDataForMonth(month) {
-    // 将数字月份转换为 '-1-' 这样的字符串格式
-    const monthString = month < 10 ? `-0${month}-` : `-${month}-`;
-    d3.csv('data/kaggle/processed/countries-avg-temperature.csv').then(tempData => {
+function loadDataForMonth(year) {
+    // const monthString = month < 10 ? `-0${month}-` : `-${month}-`;
+    const yearString = `${year}`;
+    // 过滤出特定年月的数据
+    d3.csv('data/kaggle/processed/countries-avg-temperature-by-year.csv').then(tempData => {
 
         // 获取整个数据集的温度范围
         const temperatureExtent = d3.extent(tempData, d => +d.AverageTemperature);
@@ -46,7 +47,8 @@ function loadDataForMonth(month) {
         colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain(temperatureExtent.reverse());
 
         // 现在我们过滤出month的数据
-        tempData = tempData.filter(d => d.dt.includes(monthString));
+        tempData = tempData.filter(d => d.dt.includes(yearString));
+
 
         // 用颜色比例尺为国家上色
         tempData.forEach(function (d) {
@@ -80,10 +82,6 @@ function loadDataForMonth(month) {
                         .attr("stroke", "black")
                         .attr("stroke-width", 1);
                     tip.hide(event, d)
-                })
-                .on('contextmenu', function (event, d) {
-                    // 按下右键逻辑
-                    // event.preventDefault(); // 防止浏览器执行右键的默认行为
                 })
                 .on('click', function (event, d) {
                     // 处理左键点击的逻辑
@@ -211,7 +209,7 @@ function dragEnd() {
         // Add your configuration variables here
     };
     var state = {
-        selectedMonth: 1,
+        selectedYear: 1900, // 初始年份设置为1900年
         animationRunning: false,
         animationInterval: {}
         // Add more state variables as needed
@@ -221,36 +219,48 @@ function dragEnd() {
     function init() {
         createMonthSlider();
         attachAnimateButtonEvent();
-        updateMapForMonth(1);
+        updateMap(1900);
         drawMap().then(drawLegend); // 确保先绘制地图，然后绘制图例
-        drawCity();
         // Add any other initialization logic here
     }
 
     // Create month slider with jQuery UI
+    // function createMonthSlider() {
+    //     $("#month-slider").slider({
+    //         min: 0, // 由于数组是从0开始的，因此最小值应该是0
+    //         max: 11, // 12个月，但是索引是从0开始的，所以最大值是11
+    //         value: state.selectedMonth - 1, // 将选中的月份减1以对应数组索引
+    //         create: function (event, ui) {
+    //             var slider = $(this);
+    //             var width = slider.width(); // 获取滑块的宽度
+    //             var handleWidth = slider.find('.ui-slider-handle').width(); // 获取handle的宽度
+    //             // 创建时为每个月份添加标签
+    //             months.forEach(function (month, index) {
+    //                 // 计算每个标签的左偏移量
+    //                 var left = (width / 11) * index - (handleWidth / 2) + 7;
+    //                 var label = $('<label>').addClass('slider-label').text(month).css('left', left);
+    //                 slider.append(label);
+    //             });
+    //         },
+    //         slide: function (event, ui) {
+    //             state.selectedMonth = ui.value + 1; // 加1因为你的状态是从1到12
+    //             updateMap(ui.value + 1); // 更新地图的函数也需要加1
+    //         }
+    //     });
+    // }
     function createMonthSlider() {
+        const totalMonths = (2012 - 1900 + 1);
         $("#month-slider").slider({
-            min: 0, // 由于数组是从0开始的，因此最小值应该是0
-            max: 11, // 12个月，但是索引是从0开始的，所以最大值是11
-            value: state.selectedMonth - 1, // 将选中的月份减1以对应数组索引
-            create: function (event, ui) {
-                var slider = $(this);
-                var width = slider.width(); // 获取滑块的宽度
-                var handleWidth = slider.find('.ui-slider-handle').width(); // 获取handle的宽度
-                // 创建时为每个月份添加标签
-                months.forEach(function (month, index) {
-                    // 计算每个标签的左偏移量
-                    var left = (width / 11) * index - (handleWidth / 2) + 7;
-                    var label = $('<label>').addClass('slider-label').text(month).css('left', left);
-                    slider.append(label);
-                });
-            },
+            min: 0,
+            max: totalMonths - 1,
+            value: 0, // 默认为1900年1月
             slide: function (event, ui) {
-                state.selectedMonth = ui.value + 1; // 加1因为你的状态是从1到12
-                updateMapForMonth(ui.value + 1); // 更新地图的函数也需要加1
+                state.selectedYear = ui.value + 1900
+                updateMap(state.selectedYear);
             }
         });
     }
+
 
     // Attach event to the animate button
     function attachAnimateButtonEvent() {
@@ -263,27 +273,28 @@ function dragEnd() {
         });
     }
 
-    // Update map based on selected month
-    function updateMapForMonth(month) {
-        console.log("Update map for month: " + month);
+    // Update map based on selected year and month
+    function updateMap(year) {
+        console.log("Update map for year: " + year);
         // Add logic to update the map
-        loadDataForMonth(month)
+        loadDataForMonth(year);
     }
 
     // Start map animation
     function startAnimation() {
         if (!state.animationRunning) {
             state.animationRunning = true;
-            console.log("Start animation");
-            // 开始动画，每隔5秒更新地图
+
             state.animationInterval = setInterval(function () {
-                state.selectedMonth++;
-                if (state.selectedMonth > 12) {
-                    state.selectedMonth = 1; // 如果超过12月，则重新开始
+                if (state.selectedYear > 2012) {
+                    state.selectedYear = 1900;
+                    stopAnimation();
                 }
-                updateMapForMonth(state.selectedMonth);
-                $("#month-slider").slider('value', state.selectedMonth - 1); // 更新滑块的位置
-            }, 1000);
+                state.selectedYear += 1;
+                updateMap(state.selectedYear);
+                const sliderValue = state.selectedYear - 1900;
+                $("#month-slider").slider('value', sliderValue);
+            }, 100);
         }
     }
     // Stop map animation

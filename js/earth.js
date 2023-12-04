@@ -25,76 +25,98 @@ const tip = d3.tip()
 svg.call(tip);
 
 let worldmeta;
+let countryTemperatureData = {};
+
+function loadGeoData() {
+    return d3.json('data/countries-110m.json').then(function (geoData) {
+        worldmeta = topojson.feature(geoData, geoData.objects.countries);
+        projection.fitSize([innerWidth, innerHeight], worldmeta);
+    });
+}
+
+function loadTemperatureData() {
+    d3.csv('data/kaggle/processed/countries-avg-temperature-by-month-1900-2012.csv').then(data => {
+        data.forEach(d => {
+            if (!countryTemperatureData[d.Country]) {
+                countryTemperatureData[d.Country] = [];
+            }
+            countryTemperatureData[d.Country].push(d);
+        });
+    }).catch(error => {
+        console.error("Error loading temperature data:", error);
+    });
+}
 
 function updateMapColors() {
     g.selectAll('path')
+        .data(worldmeta.features, d => d.properties.name)
         .attr('fill', d => {
             const avgTemp = tempMap[d.properties.name];
             return avgTemp ? colorScale(avgTemp) : '#ccc';
         });
 }
 
-
 function loadDataForMonth(month) {
-    // 将数字月份转换为 '-1-' 这样的字符串格式
     const monthString = month < 10 ? `-0${month}-` : `-${month}-`;
     d3.csv('data/kaggle/processed/countries-avg-temperature-by-month-2012.csv').then(tempData => {
-
-        // 获取整个数据集的温度范围
         const temperatureExtent = d3.extent(tempData, d => +d.AverageTemperature);
-        // 创建一个颜色比例尺，这里我们使用d3.interpolateRdYlBu并根据整个数据集的范围进行反转
         colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain(temperatureExtent.reverse());
 
-        // 现在我们过滤出month的数据
         tempData = tempData.filter(d => d.dt.includes(monthString));
 
-        // 用颜色比例尺为国家上色
         tempData.forEach(function (d) {
             tempMap[d.Country] = +d.AverageTemperature;
         });
-    });
 
-    d3.json('data/countries-110m.json').then(function (geoData) {
-        // convert topo-json to geo-json; 
-        worldmeta = topojson.feature(geoData, geoData.objects.countries);
-
-        // this code is really important if you want to fit your geoPaths (map) in your SVG element; 
-        projection.fitSize([innerWidth, innerHeight], worldmeta);
-
-        // perform data-join; 
-        const paths = g.selectAll('path')
-            .data(worldmeta.features, d => d.properties.name)
-            .enter().append('path')
-            .attr('d', pathGenerator)
-            .attr('stroke', 'black')
-            .attr('stroke-width', 1)
-            .on('mouseover', function (event, d) {
-                d3.select(this)
-                    .attr("opacity", 0.5)
-                    .attr("stroke", "white")
-                    .attr("stroke-width", 6);
-                tip.show(event, d);
-            })
-            .on('mouseout', function (event, d) {
-                d3.select(this)
-                    .attr("opacity", 1)
-                    .attr("stroke", "black")
-                    .attr("stroke-width", 1);
-                tip.hide(event, d)
-            })
-            .on('click', function (event, d) {
-                // 处理左键点击的逻辑
-                console.log('Left click on', d.properties.name);
-
-            });
-
-        updateMapColors(); // 更新地图颜色
-
+        updateMapColors();
     });
 }
 
 function drawMap() {
-    // 读取国家边界数据
+    if (!worldmeta) {
+        console.error("Global map data is not loaded yet.");
+        return;
+    }
+
+    const paths = g.selectAll('path')
+        .data(worldmeta.features, d => d.properties.name);
+
+    paths.enter().append('path')
+        .attr('d', pathGenerator)
+        .attr('stroke', 'black')
+        .attr('stroke-width', 1)
+        .on('mouseover', function (event, d) {
+            // 处理鼠标悬停逻辑
+            d3.select(this)
+                .attr("opacity", 0.5)
+                .attr("stroke", "white")
+                .attr("stroke-width", 6);
+            tip.show(event, d);
+        })
+        .on('mouseout', function (event, d) {
+            // 处理鼠标移出逻辑
+            d3.select(this)
+                .attr("opacity", 1)
+                .attr("stroke", "black")
+                .attr("stroke-width", 1);
+            tip.hide(event, d);
+        })
+        .on('click', function (event, d) {
+            const countryName = d.properties.name;
+            const temperatureData = countryTemperatureData[countryName];
+
+            console.log(temperatureData); // TODO: 绘制国家的气温折线图
+        });
+
+    // 更新已存在的路径元素
+    paths.attr('fill', d => {
+        // 根据需要更新颜色
+        const avgTemp = tempMap[d.properties.name];
+        return avgTemp ? colorScale(avgTemp) : '#ccc';
+    });
+
+    // 删除多余的路径元素
+    paths.exit().remove();
     return d3.json('data/countries-110m.json').then(function (geoData) {})
 }
 
@@ -138,28 +160,6 @@ function drawLegend() {
 }
 
 
-function drawCity() {
-    // console.log('hi');
-    // d3.csv('data/kaggle/processed/major-cities-info.csv').then(function (data) {
-    //     const paths = g.selectAll('.city-point')
-    //         .data(data)
-    //         .enter().append('circle')
-    //         .attr('class', 'city-point')
-    //         .attr('cx', function (d) { return projection([d.Longitude, d.Latitude])[0]; })
-    //         .attr('cy', function (d) { return projection([d.Longitude, d.Latitude])[1]; })
-    //         .attr('r', 2) // 你可以调整圆圈的大小
-    //         .attr('fill', 'red')
-    //         .attr('stroke', 'black')
-    //         .attr('stroke-width', 0.6)
-    //         .on('mouseover', function (event, d) {
-    //             // 处理鼠标悬停时的逻辑，例如显示城市站信息
-    //             console.log('Mouseover on city:', d.City);
-    //         })
-    //         .on('mouseout', function () {
-    //             // 处理鼠标移出时的逻辑，例如隐藏城市站信息
-    //         });
-    // });
-}
 
 
 let dragStartCoords = [0, 0];
@@ -173,10 +173,6 @@ svg.call(d3.zoom()
 
 function zoomed(event) {
     const currentScale = event.transform.k;
-
-    g.selectAll('.city-point')
-        // .attr('display', currentScale > 2 ? 'block' : 'none')
-
     g.attr("transform", event.transform);
 }
 
@@ -214,14 +210,14 @@ function dragEnd() {
         // Add more state variables as needed
     };
 
-    // Initialization function
     function init() {
+        loadTemperatureData();
+        loadGeoData().then(() => {
+            drawMap().then(drawLegend); // 确保先绘制地图，然后绘制图例
+        });
         createMonthSlider();
         attachAnimateButtonEvent();
         updateMapForMonth(1);
-        drawMap().then(drawLegend); // 确保先绘制地图，然后绘制图例
-        drawCity();
-        // Add any other initialization logic here
     }
 
     // Create month slider with jQuery UI

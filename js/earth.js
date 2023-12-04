@@ -52,47 +52,44 @@ function loadDataForMonth(month) {
         tempData.forEach(function (d) {
             tempMap[d.Country] = +d.AverageTemperature;
         });
+    });
 
-        d3.json('data/countries-110m.json').then(function (geoData) {
-            // convert topo-json to geo-json; 
-            worldmeta = topojson.feature(geoData, geoData.objects.countries);
+    d3.json('data/countries-110m.json').then(function (geoData) {
+        // convert topo-json to geo-json; 
+        worldmeta = topojson.feature(geoData, geoData.objects.countries);
 
-            // this code is really important if you want to fit your geoPaths (map) in your SVG element; 
-            projection.fitSize([innerWidth, innerHeight], worldmeta);
+        // this code is really important if you want to fit your geoPaths (map) in your SVG element; 
+        projection.fitSize([innerWidth, innerHeight], worldmeta);
 
-            // perform data-join; 
-            const paths = g.selectAll('path')
-                .data(worldmeta.features, d => d.properties.name)
-                .enter().append('path')
-                .attr('d', pathGenerator)
-                .attr('stroke', 'black')
-                .attr('stroke-width', 1)
-                .on('mouseover', function (event, d) {
-                    d3.select(this)
-                        .attr("opacity", 0.5)
-                        .attr("stroke", "white")
-                        .attr("stroke-width", 6);
-                    tip.show(event, d);
-                })
-                .on('mouseout', function (event, d) {
-                    d3.select(this)
-                        .attr("opacity", 1)
-                        .attr("stroke", "black")
-                        .attr("stroke-width", 1);
-                    tip.hide(event, d)
-                })
-                .on('contextmenu', function (event, d) {
-                    // 按下右键逻辑
-                    // event.preventDefault(); // 防止浏览器执行右键的默认行为
-                })
-                .on('click', function (event, d) {
-                    // 处理左键点击的逻辑
-                    console.log('Left click on', d.properties.name);
-                });
+        // perform data-join; 
+        const paths = g.selectAll('path')
+            .data(worldmeta.features, d => d.properties.name)
+            .enter().append('path')
+            .attr('d', pathGenerator)
+            .attr('stroke', 'black')
+            .attr('stroke-width', 1)
+            .on('mouseover', function (event, d) {
+                d3.select(this)
+                    .attr("opacity", 0.5)
+                    .attr("stroke", "white")
+                    .attr("stroke-width", 6);
+                tip.show(event, d);
+            })
+            .on('mouseout', function (event, d) {
+                d3.select(this)
+                    .attr("opacity", 1)
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 1);
+                tip.hide(event, d)
+            })
+            .on('click', function (event, d) {
+                // 处理左键点击的逻辑
+                console.log('Left click on', d.properties.name);
 
-            updateMapColors(); // 更新地图颜色
+            });
 
-        });
+        updateMapColors(); // 更新地图颜色
+
     });
 }
 

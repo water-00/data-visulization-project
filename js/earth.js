@@ -38,7 +38,7 @@ function updateMapColors() {
 function loadDataForMonth(month) {
     // 将数字月份转换为 '-1-' 这样的字符串格式
     const monthString = month < 10 ? `-0${month}-` : `-${month}-`;
-    d3.csv('data/kaggle/processed/countries-avg-temperature.csv').then(tempData => {
+    d3.csv('data/kaggle/processed/countries-avg-temperature-by-month-2012.csv').then(tempData => {
 
         // 获取整个数据集的温度范围
         const temperatureExtent = d3.extent(tempData, d => +d.AverageTemperature);

@@ -286,14 +286,14 @@ function dragEnd() {
             state.animationRunning = true;
 
             state.animationInterval = setInterval(function () {
-                if (state.selectedYear > 2012) {
-                    state.selectedYear = 1900;
-                    stopAnimation();
-                }
                 state.selectedYear += 1;
                 updateMap(state.selectedYear);
                 const sliderValue = state.selectedYear - 1900;
                 $("#month-slider").slider('value', sliderValue);
+                if (state.selectedYear == 2012) {
+                    stopAnimation();
+                    state.selectedYear = 1900;
+                }
             }, 100);
         }
     }

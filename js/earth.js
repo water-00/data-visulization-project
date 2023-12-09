@@ -106,7 +106,7 @@ function drawMap() {
             const countryName = d.properties.name;
             const temperatureData = countryTemperatureData[countryName];
 
-            console.log(temperatureData); // TODO: 绘制国家的气温折线图
+            // console.log(temperatureData); // TODO: 绘制国家的气温折线图
             linechart(temperatureData);
         });
 

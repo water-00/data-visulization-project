@@ -7,33 +7,27 @@ export function linechart(data) {
     width    = 864 - margin.left - margin.right,
     height   = 333 - margin.top - margin.bottom,
     height2  = 313 - margin2.top - margin2.bottom;//第三个图
-//日期的处理和格式化 
-var parseDate = d3.timeParse('%Y-%m-%d'),
-      bisectDate = d3.bisector(function(d) { return d.date; }).left,
-      legendFormat = d3.timeParse('%b %d, %Y');
+  //日期的处理和格式化 
+  var parseDate = d3.timeParse('%Y-%m-%d'),
+        bisectDate = d3.bisector(function(d) { return d.date; }).left,
+        legendFormat = d3.timeParse('%b %d, %Y');
 
-      // data.forEach(function(d) {
-      //   d.value = +d.value; // 将值转换为数字
-      //   if (isNaN(d.value)) {
-      //     // 处理无效值，可以设置默认值或者丢弃这条数据
-      //     d.value = 0; // 设置默认值
-      //   }
-      // });
+  data = data.map(function (d) {
+    var temperature = +d.AverageTemperature;
+    if (isNaN(temperature)) {
+      // 如果 AverageTemperature 无法转换为数字，则设置默认值
+      temperature = 0;
+    }
 
-data.map(function(d) { var temperature = +d.AverageTemperature;
-  if (isNaN(temperature)) {
-  // 可以设置默认值或者丢弃这条数据
-  temperature = 0; // 设置默认值
-}
-  return {
-    date: parseDate(d.dt),    // 假设日期字段为 "date"
-    //price: isNaN(temperature) ? 0 : temperature,         // 假设价格字段为 "price"
-    //average: isNaN(temperature) ? 0 : temperature,  
-    price: +d.temperature,           // 假设价格字段为 "price"
-    average: +d.temperature,    // 假设平均值字段为 "average"
-   // volume: +d.volume          // 假设体积字段为 "volume"
-  };
-});
+    return {
+      date: parseDate(d.dt),  // 假设日期字段为 "dt"
+      price: temperature,      // 这里使用上面计算的 temperature
+      average: temperature    // 假设平均值字段也使用 temperature
+    };
+  });
+
+  console.log(data);
+
 
 //比例尺的定义
 var x = d3.scaleTime().range([0, width]), // 时间比例尺 主图表

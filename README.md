@@ -110,16 +110,16 @@
 
    ①折线图接入接口后出现以下报错
 
-![](C:\Users\weiweiwei\data-visulization-project\md_img\屏幕截图 2023-12-09 145721.png)
+![](md_img\屏幕截图 2023-12-09 145721.png)
 
 考虑是否是min.js的问题，并且我们的折线图的函数已经对缺省值已经进行了处理。
 
   ②给同伴的建议。
 
-![](C:\Users\weiweiwei\data-visulization-project\md_img\屏幕截图 2023-12-09 150419.png)
+![](md_img\屏幕截图 2023-12-09 150419.png)
 
-![屏幕截图 2023-12-09 150309](C:\Users\weiweiwei\data-visulization-project\md_img\屏幕截图 2023-12-09 150309.png)
+![屏幕截图 2023-12-09 150309](md_img\屏幕截图 2023-12-09 150309.png)
 
-![屏幕截图 2023-12-09 150330](C:\Users\weiweiwei\data-visulization-project\md_img\屏幕截图 2023-12-09 150330.png)
+![屏幕截图 2023-12-09 150330](md_img\屏幕截图 2023-12-09 150330.png)
 
 当按下animate按钮后滑块无法对准月份，且在Dec之后还会继续变化，是否是滑块和标签未对准的问题。

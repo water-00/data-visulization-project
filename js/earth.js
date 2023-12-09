@@ -1,4 +1,4 @@
-import { linechart } from "../line/scripttry.js";
+import { linechart } from "./scripttry.js";
 let svg = d3.select('svg');
 const width = +svg.attr('width');
 const height = +svg.attr('height');
@@ -107,6 +107,8 @@ function drawMap() {
             const temperatureData = countryTemperatureData[countryName];
 
             // console.log(temperatureData); // TODO: 绘制国家的气温折线图
+            var chartContainer = document.getElementById('line-chart-container');
+            chartContainer.style.display = 'block';
             linechart(temperatureData);
         });
 

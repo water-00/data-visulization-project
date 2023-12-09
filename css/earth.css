@@ -14,20 +14,26 @@ path {
     position: absolute;
     bottom: 0;
     width: 65%;
-    justify-content: space-between; /* 内容平均分布 */
+    justify-content: space-between;
+    /* 内容平均分布 */
     margin: 0px 385px;
-    padding: 1px; /* 减小padding减少白色空间 */
-    background-color: #fff; /* 或任何您喜欢的颜色 */
-    border-radius: 10px; /* 添加圆角 */
+    padding: 1px;
+    /* 减小padding减少白色空间 */
+    background-color: #fff;
+    /* 或任何您喜欢的颜色 */
+    border-radius: 10px;
+    /* 添加圆角 */
 }
 
 #month-slider {
-    flex-grow: 1; /* 滑块占据剩余空间 */
+    flex-grow: 1;
+    /* 滑块占据剩余空间 */
     width: 80%;
     margin-top: 10px;
     margin-bottom: 23px;
     margin-left: 30px;
 }
+
 #animate-button {
     position: absolute;
     padding: 5px 20px;
@@ -89,4 +95,30 @@ path {
 .side-button:hover {
     background-color: #88bff7;
     /* Slightly darker blue on hover */
+}
+
+#line-chart-container {
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    /* 或者你希望的宽度 */
+    height: 80%;
+    /* 或者你希望的高度 */
+    max-width: 864px;
+    /* 最大宽度与 SVG 宽度匹配 */
+    margin: 0 auto;
+    /* 水平居中 */
+    padding: 20px;
+    /* 内边距 */
+    border: 1px solid #ccc;
+    /* 边框样式，可自定义 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    /* 盒子阴影效果 */
+    background-color: #f9f9f9;
+    /* 背景颜色 */
+    display: none;
+    /* 初始设置为不显示 */
 }

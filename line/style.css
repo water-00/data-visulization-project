@@ -54,6 +54,15 @@ svg {
   fill: #99c5df;
   opacity: 1;
 }
+.tooltip {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 5px;
+  border-radius: 5px;
+  pointer-events: none;
+  font-size: 14px;
+}
 .chart__range-selection text {
   cursor: pointer;
   text-decoration: underline;

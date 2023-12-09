@@ -1,6 +1,7 @@
 
 import { linechart } from "../line/scripttry.js";
 $(document).ready(function () {
+    
     $('.side-button').click(function () {
         var buttonName = $(this).text().replace(/\s+/g, '-'); // Remove spaces and replace with hyphens
         var csvFilePath = `data/nasa-climate/${buttonName}.csv`; // Construct the file path

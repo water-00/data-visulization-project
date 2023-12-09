@@ -1,3 +1,5 @@
+
+import { linechart } from "../line/scripttry.js";
 $(document).ready(function () {
     $('.side-button').click(function () {
         var buttonName = $(this).text().replace(/\s+/g, '-'); // Remove spaces and replace with hyphens
@@ -5,6 +7,7 @@ $(document).ready(function () {
         loadCSVData(csvFilePath, function (data) {
             // TODO: 使用data绘制交互折线图。如果不同data需要不同函数执行，不能放在一个块的话可以用switch case(buttonName)
             console.log(data);
+            linechart(data);
         });
     });
 });

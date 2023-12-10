@@ -32,11 +32,12 @@ svg {
 .chart__price--focus {
   stroke-width: 2px;
   stroke: #2980b9;
+  opacity: 0.5;
 }
 .chart__average--focus {
   stroke-width: 2px;
   stroke: #f00;
-  opacity: 0.3;
+  opacity: 1.0;
 }
 .chart__overlay {
   opacity: 0;

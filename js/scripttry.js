@@ -1,26 +1,50 @@
+function calculateYearlyAverages(data) {
+  var yearMap = {};
+
+  data.forEach(function (d) {
+    var year = d.dt.substring(0, 4);  // 假设 dt 格式为 "YYYY-MM-DD"
+    if (!yearMap[year]) {
+      yearMap[year] = { total: 0, count: 0 };
+    }
+    var temperature = +d.AverageTemperature;
+    if (!isNaN(temperature)) {
+      yearMap[year].total += temperature;
+      yearMap[year].count++;
+    }
+  });
+
+  var yearlyAverages = {};
+  for (var year in yearMap) {
+    yearlyAverages[year] = yearMap[year].total / yearMap[year].count;
+  }
+  return yearlyAverages;
+}
+
 export function linechart(data) {
   //边距方面的定义
   var margin = { top: 50, right: 20, bottom: 185, left: 50 },
     margin2 = { top: 250, right: 20, bottom: 0, left: 50 },
     width = 864 - margin.left - margin.right,
     height = 433 - margin.top - margin.bottom,
-    height2 = 413 - margin2.top - margin2.bottom;//第三个图
+    height2 = 413 - margin2.top - margin2.bottom;//第二个图
   //日期的处理和格式化 
   var parseDate = d3.timeParse('%Y-%m-%d'), // 字符串->日期
     bisectDate = d3.bisector(function (d) { return d.date; }).left,
     legendFormat = d3.timeFormat('%b %d, %Y'); // 日期->字符串
+  var yearlyAverages = calculateYearlyAverages(data);
 
   data = data.map(function (d) {
     var temperature = +d.AverageTemperature;
     if (isNaN(temperature)) {
-      // 如果 AverageTemperature 无法转换为数字，则设置默认值
       temperature = 0;
     }
+    var year = d.dt.substring(0, 4);
+    var average = yearlyAverages[year];
 
     return {
-      date: parseDate(d.dt),  // 假设日期字段为 "dt"
-      price: temperature,      // 这里使用上面计算的 temperature
-      average: temperature    // 假设平均值字段也使用 temperature
+      date: parseDate(d.dt),
+      price: temperature,
+      average: average
     };
   });
 
@@ -31,8 +55,7 @@ export function linechart(data) {
     x2 = d3.scaleTime().range([0, width]),
     y = d3.scaleLinear().range([height, 0]),
     y1 = d3.scaleLinear().range([height, 0]),
-    y2 = d3.scaleLinear().range([height2, 0]),
-    y3 = d3.scaleLinear().range([60, 0]); // 柱形图的高度
+    y2 = d3.scaleLinear().range([height2, 0]);
   //坐标轴的定义 xaxis是主图表的x轴 yaxis是主图表的y轴
   var xAxis = d3.axisBottom().scale(x),
     xAxis2 = d3.axisBottom().scale(x2),
@@ -44,13 +67,12 @@ export function linechart(data) {
     .x(function (d) { return x(d.date); })
     .y(function (d) { return y(d.price); });
   //平均线条的绘制
-  // var avgLine = d3.svg.line()
-  //   .interpolate('monotone')
-  //   .x(function(d) { return x(d.date); })
-  //   .y(function(d) { return y(d.average); });
+  var averageLine = d3.line()
+    .curve(d3.curveBasis) // This will make the line smoother
+    .x(function (d) { return x(d.date); })
+    .y(function (d) { return y(d.average); });
+
   //area2是用于绘制下方上下文图表的区域图的D3面积生成器
-
-
   var area2 = d3.area()
     .x(function (d) { return x2(d.date); })
     .y0(height2)
@@ -88,7 +110,7 @@ export function linechart(data) {
     .attr('class', 'chart__legend')
     .attr('width', width)
     .attr('height', 30)
-    .attr('transform', 'translate(' + margin2.left + ', 10)');
+    .attr('transform', 'translate(' + (margin2.left) + ', 10)');
   //向图例中添加文本
   legend.append('text')
     .attr('class', 'chart__symbol')
@@ -117,7 +139,6 @@ export function linechart(data) {
 
       x.domain(xRange);
       y.domain(d3.extent(data.map(function (d) { return d.price; })));
-      y3.domain(d3.extent(data.map(function (d) { return d.price; })));
       x2.domain(x.domain());
       y2.domain(y.domain());
 
@@ -139,12 +160,12 @@ export function linechart(data) {
         .tickFormat(''));
 
     //平均线图的路径元素
-    // var averageChart = focus.append('path')
-    //     .datum(data)
-    //     .attr('class', 'chart__line chart__average--focus line')
-    //     .attr('d', avgLine);
+    var averageChart = focus.append('path')
+      .datum(data)
+      .attr('class', 'chart__line chart__average--focus line')
+      .attr('d', averageLine);
 
-    //为价格线创建一个路径元素
+    //为月温度线创建一个路径元素
     var temperatureChart = focus.append('path')
       .datum(data)
       .attr('class', 'chart__line chart__price--focus line')
@@ -166,7 +187,7 @@ export function linechart(data) {
 
     focus.append('g')
       .attr('class', 'y axis')
-      .attr('transform', 'translate(1, 0)')//y轴刻度线位置
+      .attr('transform', 'translate(-13, 0)')//y轴刻度线位置
       .call(yAxis)
       .append('text')
       .attr('class', 'y axis-label')
@@ -284,6 +305,7 @@ export function linechart(data) {
 
         // 更新图表
         temperatureChart.attr('d', temperatureLine);
+        averageChart.attr('d', averageLine);
         focus.select('.x.axis').call(xAxis);
         focus.select('.y.axis').call(yAxis);
       }
@@ -302,7 +324,7 @@ export function linechart(data) {
       .on('click', resetBrush);
 
     resetButton.style('position', 'absolute')
-      .style('top', '530px')  // 设置按钮距离顶部的位置
+      .style('top', '500px')  // 设置按钮距离顶部的位置
       .style('left','925px')  // 设置按钮距离左侧的位置
       .style('padding', '5px')  // 设置按钮内边距
       .style('font-size', '15px')  // 设置字体大小
@@ -317,7 +339,7 @@ export function linechart(data) {
       .on('click', closeChart);
 
     closeButton.style('position', 'absolute')
-      .style('top', '530px')  // 设置按钮距离顶部的位置
+      .style('top', '500px')  // 设置按钮距离顶部的位置
       .style('left', '980px')  // 设置按钮距离左侧的位置
       .style('padding', '5px')  // 设置按钮内边距
       .style('font-size', '15px')  // 设置字体大小
@@ -332,6 +354,7 @@ export function linechart(data) {
 
       // 更新图表
       temperatureChart.attr('d', temperatureLine);
+      averageChart.attr('d', averageLine);
       focus.select('.x.axis').call(xAxis);
       focus.select('.y.axis').call(yAxis);
 
@@ -343,10 +366,7 @@ export function linechart(data) {
       d3.selectAll('#resetButton').remove();
       d3.selectAll('#closeButton').remove();
       d3.selectAll('#line-chart-container').selectAll('*').remove();
-      // d3.selectAll('#line-chart-container').html('');
-      // d3.selectAll('#line-chart-container').style('border', 'none');
-      // d3.selectAll('#line-chart-container').style('height', '0px').style('padding', '0px');
-      
+  
       var chartContainer = document.getElementById('line-chart-container');
       chartContainer.style.display = 'none';
     }

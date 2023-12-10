@@ -1,10 +1,3 @@
-# --------------------------------------------------------------------
-# USE OF NOAA GML DATA
-# 
-# These data are made freely available to the public and the scientific
-# community in the belief that their wide dissemination will lead to
-# greater understanding and new scientific insights. To ensure that GML
-# receives fair credit for their work please include relevant citation
 year,mean,unc
 1984,1644.85,0.67
 1985,1657.29,0.59

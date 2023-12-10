@@ -6,7 +6,7 @@ body {
 path {
     /* fill: rgb(110, 149, 221);
     stroke: rgb(29, 25, 25); */
-    stroke-opacity: 0.1;
+    stroke-opacity: 0.2;
     cursor: move;
 }
 
@@ -98,11 +98,10 @@ path {
 }
 
 #line-chart-container {
-
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -54%);
     width: 90%;
     /* 或者你希望的宽度 */
     height: 80%;
@@ -121,4 +120,45 @@ path {
     /* 背景颜色 */
     display: none;
     /* 初始设置为不显示 */
+}
+
+#climate-chart {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-35%, -55%);
+    width: 65%;
+    /* 或者你希望的宽度 */
+    height: 80%;
+    /* 或者你希望的高度 */
+    max-width: 964px;
+    /* 最大宽度与 SVG 宽度匹配 */
+    margin: 0 auto;
+    /* 水平居中 */
+    padding: 20px;
+    /* 内边距 */
+    border: 1px solid #ccc;
+    /* 边框样式，可自定义 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    /* 盒子阴影效果 */
+    background-color: #f9f9f9;
+    /* 背景颜色 */
+    display: none;
+    /* 初始设置为不显示 */
+}
+
+.dot {
+    fill: rgb(70, 155, 240);
+    stroke: black;
+    opacity: 0.3;
+}
+
+.grid line {
+    stroke: lightgrey;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+}
+
+.grid path {
+    stroke-width: 0;
 }

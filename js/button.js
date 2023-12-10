@@ -7,7 +7,7 @@ $(document).ready(function () {
         var csvFilePath = `data/nasa-climate/${buttonName}.csv`; // Construct the file path
         loadCSVData(csvFilePath, function (data) {
             // TODO: 使用data绘制交互折线图。如果不同data需要不同函数执行，不能放在一个块的话可以用switch case(buttonName)
-            console.log(data);
+            // console.log(data);
             linechart(data);
         });
     });

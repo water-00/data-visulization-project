@@ -1,11 +1,10 @@
-/* global d3, _ */
 export function linechart(data) {
   //边距方面的定义
-  var margin = { top: 50, right: 20, bottom: 100, left: 50 },
-    margin2 = { top: 230, right: 20, bottom: 20, left: 50 },
+  var margin = { top: 50, right: 20, bottom: 185, left: 50 },
+    margin2 = { top: 250, right: 20, bottom: 0, left: 50 },
     width = 864 - margin.left - margin.right,
-    height = 333 - margin.top - margin.bottom,
-    height2 = 313 - margin2.top - margin2.bottom;//第三个图
+    height = 433 - margin.top - margin.bottom,
+    height2 = 413 - margin2.top - margin2.bottom;//第三个图
   //日期的处理和格式化 
   var parseDate = d3.timeParse('%Y-%m-%d'), // 字符串->日期
     bisectDate = d3.bisector(function (d) { return d.date; }).left,
@@ -25,7 +24,7 @@ export function linechart(data) {
     };
   });
 
-
+  var selection;
 
   //比例尺的定义
   var x = d3.scaleTime().range([0, width]), // 时间比例尺 主图表
@@ -51,11 +50,7 @@ export function linechart(data) {
   //   .y(function(d) { return y(d.average); });
   //area2是用于绘制下方上下文图表的区域图的D3面积生成器
 
-  // var area2 = d3.svg.area()
-  //   .interpolate('monotone')
-  //   .x(function(d) { return x2(d.date); })
-  //   .y0(height2)
-  //   .y1(function(d) { return y2(d.price); });
+
   var area2 = d3.area()
     .x(function (d) { return x2(d.date); })
     .y0(height2)
@@ -68,19 +63,13 @@ export function linechart(data) {
     .attr('height', height + margin.top + margin.bottom);
 
   //一个用于裁剪的clipPath，这通常用于确保图表元素只在指定区域内显示。
-  // svg.append('defs').append('clipPath')
-  //   .attr('id', 'clip')
-  //   .append('rect')
-  //   .attr('width', width)
-  //   .attr('height', height);
+  svg.append('defs').append('clipPath')
+    .attr('id', 'clip')
+    .append('rect')
+    .attr('width', width)
+    .attr('height', height);
 
   //添加y轴辅助线的生成器
-  // var make_y_axis = function () {
-  //   return d3.svg.axis()
-  //     .scale(y)
-  //     .orient('left')
-  //     .ticks(13);
-  // };
   var make_y_axis = function () {
     return d3.axisLeft(y)
       .ticks(13);
@@ -89,11 +78,6 @@ export function linechart(data) {
     .attr('class', 'focus')
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-  // //条状图
-  // var barsGroup = svg.append('g')
-  //   .attr('class', 'volume')
-  //   .attr('clip-path', 'url(#clip)')
-  //   .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20) + ')');
   //面积图
   var context = svg.append('g')
     .attr('class', 'context')
@@ -126,10 +110,6 @@ export function linechart(data) {
       .on('brush', brushed);
     // 将 brush 应用于特定的 x 比例尺（假设为 x2）
     d3.select('svg').call(brush);
-
-
-    //  d3.select('svg')
-    //  .on('wheel', wheelZoom);
 
     //计算交互的数据x轴的范围
     if (data) {
@@ -178,7 +158,7 @@ export function linechart(data) {
       .append('text')
       .attr('class', 'x axis-label')
       .attr('x', width / 2) // 将文本放置在x轴中间位置
-      .attr('y', margin.bottom * 0.3) // 根据需要调整文本的垂直位置
+      .attr('y', margin.bottom * 0.2) // 根据需要调整文本的垂直位置
       .style('text-anchor', 'middle')
       .text('year')
       .style('font-size', '14px')
@@ -192,19 +172,10 @@ export function linechart(data) {
       .attr('class', 'y axis-label')
       .attr('transform', 'rotate(-90)') // 旋转文本以适应y轴
       .attr('x', -height / 2) // 将文本放置在y轴中间位置
-      .attr('y', -margin.left * 0.3) // 根据需要调整文本的垂直位置
+      .attr('y', -margin.left * 0.42) // 根据需要调整文本的垂直位置
       .style('text-anchor', 'middle')
       .style('font-size', '14px')
       .text('Temperature(℃)');
-    //绘制柱状图
-    // var focusGraph = barsGroup.selectAll('rect')
-    //     .data(data)
-    //   .enter().append('rect')
-    //     .attr('class', 'chart__bars')
-    //     .attr('x', function(d, i) { return x(d.date); })
-    //     .attr('y', function(d) { return 155 - y3(d.price); })
-    //     .attr('width', 1)
-    //     .attr('height', function(d) { return y3(d.price); });
 
     // 创建一个辅助组，用于容纳一些文本元素，可能用于显示与图表交互相关的信息。
     var helper = focus.append('g')
@@ -294,27 +265,12 @@ export function linechart(data) {
         .style('opacity', 0);
     }
 
-    function wheelZoom(event) {
-      if (!event.sourceEvent) return; // 避免重复触发
-      if (event.sourceEvent && event.sourceEvent.type === 'mousemove') {
-        const delta = event.sourceEvent.deltaY; // 获取鼠标滚轮的滚动距离
-        // 获取当前 brush 的范围
-        const selection = d3.brushSelection(this); // 使用 d3.brushSelection 获取当前的选择范围
-        if (selection) {
-          const [x0, x1] = selection;
-          const move = delta > 0 ? ((x1 - x0) * 0.1) : ((x1 - x0) * -0.1);
-          const newExtent = [x0 + move, x1 - move].map(x.invert);
-          // 调用 brush.move 更新 brush 的范围
-          d3.select(this).call(brush.move, newExtent.map(x));
-        }
-      }
-    }
-
     function brushed(event) {
       // 使用 d3.brushSelection 获取当前的刷选范围
-      var selection = d3.brushSelection(this) || null;
+      if (!selection || selection[1][0] != 794) {
+        selection = d3.brushSelection(this) || null;
+      }
       if (selection && !selection[0].includes(NaN)) {
-        console.log(selection);
 
         // 提取水平方向的像素值范围
         var pixelRange = selection.map(s => s[0]);
@@ -346,8 +302,23 @@ export function linechart(data) {
       .on('click', resetBrush);
 
     resetButton.style('position', 'absolute')
-      .style('top', '290px')  // 设置按钮距离顶部的位置
-      .style('left', (width - 150) + '23')  // 设置按钮距离左侧的位置
+      .style('top', '530px')  // 设置按钮距离顶部的位置
+      .style('left','925px')  // 设置按钮距离左侧的位置
+      .style('padding', '5px')  // 设置按钮内边距
+      .style('font-size', '15px')  // 设置字体大小
+      .style('background-color', '#7f8faf')  // 设置背景颜色
+      .style('color', '#000000') // 设置文字颜色
+      .style('border-radius', '5px');
+
+    var closeButton = d3.select('body')
+      .append('button')
+      .attr('id', 'closeButton')
+      .text('close')
+      .on('click', closeChart);
+
+    closeButton.style('position', 'absolute')
+      .style('top', '530px')  // 设置按钮距离顶部的位置
+      .style('left', '980px')  // 设置按钮距离左侧的位置
       .style('padding', '5px')  // 设置按钮内边距
       .style('font-size', '15px')  // 设置字体大小
       .style('background-color', '#7f8faf')  // 设置背景颜色
@@ -366,6 +337,18 @@ export function linechart(data) {
 
       // 清空 brush 的选区
       context.select('.brush').call(brush.move, null);
+    }
+
+    function closeChart() {
+      d3.selectAll('#resetButton').remove();
+      d3.selectAll('#closeButton').remove();
+      d3.selectAll('#line-chart-container').selectAll('*').remove();
+      // d3.selectAll('#line-chart-container').html('');
+      // d3.selectAll('#line-chart-container').style('border', 'none');
+      // d3.selectAll('#line-chart-container').style('height', '0px').style('padding', '0px');
+      
+      var chartContainer = document.getElementById('line-chart-container');
+      chartContainer.style.display = 'none';
     }
 
     //创建不同范围的按钮列表
@@ -408,14 +391,12 @@ export function linechart(data) {
           break;
       }
 
-      console.log("Adjusted date:", ext);
-      console.log("Today's date:", today);
-
       var brushExtent = [x2(ext), x2(today)];
-      console.log("Brush extent (pixel values):", brushExtent);
-
+      selection = [[x2(ext), 0], [x2(today), 140]]
+      
       // 使用 brush.move 来更新刷选区域
       context.select('.brush').call(brush.move, brushExtent);
+      selection = [[0, 0], [0, 0]]
     }
   }
 

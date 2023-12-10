@@ -108,8 +108,14 @@ function drawMap() {
 
             // console.log(temperatureData); // TODO: 绘制国家的气温折线图
             var chartContainer = document.getElementById('line-chart-container');
-            chartContainer.style.display = 'block';
-            linechart(temperatureData);
+            
+            if (chartContainer.style.display === 'block') {
+                // 请先关闭当前窗口
+            }
+            else {
+                chartContainer.style.display = 'block';
+                linechart(temperatureData);
+            }
         });
 
     // 更新已存在的路径元素

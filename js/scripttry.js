@@ -84,8 +84,8 @@ export function linechart(data) {
   //向图例中添加文本
   legend.append('text')
     .attr('class', 'chart__symbol')
-    .text('Temperature in Decades')
-    .style('font-size', '14px')
+    .text('Temperature-Change in Decades')
+    .style('font-size', '13px')
     .attr('transform', 'translate(' + -50 + ', 12)')
   //时间范围选择器
   var rangeSelection = legend

@@ -1,10 +1,11 @@
 import { carbon_dioxide } from "./carbon_dioxide.js";
 import { global_temperature } from "./global_temperature.js"
 import { mathane } from "./mathane.js"
-
+import { ocean_warming } from "./ocean_warming.js";
+import { sea_level } from "./sea_level.js";
+import { ice_minimum_extent } from "./ice_minimum_extent.js";
 
 $(document).ready(function () {
-    var flag1 = false, flag2 = false, flag3 = false, flag4 = false, flag5 = false, flag6 = false;
     $('.side-button, .close-button').click(function () {
         var buttonName = $(this).text().replace(/\s+/g, '-'); // Remove spaces and replace with hyphens
         var csvFilePath = `data/nasa-climate/${buttonName}.csv`; // Construct the file path
@@ -53,17 +54,4 @@ function loadCSVData(filePath, callback) {
     }).catch(function (error) {
         console.error('Error loading CSV data:', error);
     });
-}
-
-
-function ocean_warming(data) {
-
-}
-
-function sea_level(data) {
-
-}
-
-function ice_minimum_extent(data) {
-
 }

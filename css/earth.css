@@ -6,7 +6,7 @@ body {
 path {
     /* fill: rgb(110, 149, 221);
     stroke: rgb(29, 25, 25); */
-    stroke-opacity: 0.2;
+    stroke-opacity: 0.5;
     cursor: move;
 }
 

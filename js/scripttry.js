@@ -1,53 +1,29 @@
-function calculateYearlyAverages(data) {
-  var yearMap = {};
-
-  data.forEach(function (d) {
-    var year = d.dt.substring(0, 4);  // 假设 dt 格式为 "YYYY-MM-DD"
-    if (!yearMap[year]) {
-      yearMap[year] = { total: 0, count: 0 };
-    }
-    var temperature = +d.AverageTemperature;
-    if (!isNaN(temperature)) {
-      yearMap[year].total += temperature;
-      yearMap[year].count++;
-    }
-  });
-
-  var yearlyAverages = {};
-  for (var year in yearMap) {
-    yearlyAverages[year] = yearMap[year].total / yearMap[year].count;
-  }
-  return yearlyAverages;
-}
-
 export function linechart(data) {
   //边距方面的定义
   var margin = { top: 50, right: 20, bottom: 185, left: 50 },
-    margin2 = { top: 250, right: 20, bottom: 0, left: 50 },
+    margin2 = { top: 250, right: 20, bottom: 50, left: 50 },
     width = 864 - margin.left - margin.right,
     height = 433 - margin.top - margin.bottom,
     height2 = 413 - margin2.top - margin2.bottom;//第二个图
   //日期的处理和格式化 
-  var parseDate = d3.timeParse('%Y-%m-%d'), // 字符串->日期
+  var parseDate = d3.timeParse('%Y'), // 字符串->日期
     bisectDate = d3.bisector(function (d) { return d.date; }).left,
-    legendFormat = d3.timeFormat('%b %d, %Y'); // 日期->字符串
-  var yearlyAverages = calculateYearlyAverages(data);
+    legendFormat = d3.timeFormat('%Y'); // 日期->字符串
 
   data = data.map(function (d) {
-    var temperature = +d.AverageTemperature;
+    var temperature = +d.TemperatureDifference;
     if (isNaN(temperature)) {
       temperature = 0;
     }
     var year = d.dt.substring(0, 4);
-    var average = yearlyAverages[year];
 
     return {
       date: parseDate(d.dt),
-      price: temperature,
-      average: average
+      price: +d.TemperatureDifference,
     };
   });
 
+  
   var selection;
 
   //比例尺的定义
@@ -66,12 +42,6 @@ export function linechart(data) {
     .curve(d3.curveMonotoneX)
     .x(function (d) { return x(d.date); })
     .y(function (d) { return y(d.price); });
-  //平均线条的绘制
-  var averageLine = d3.line()
-    .curve(d3.curveBasis) // This will make the line smoother
-    .x(function (d) { return x(d.date); })
-    .y(function (d) { return y(d.average); });
-
   //area2是用于绘制下方上下文图表的区域图的D3面积生成器
   var area2 = d3.area()
     .x(function (d) { return x2(d.date); })
@@ -137,13 +107,16 @@ export function linechart(data) {
     if (data) {
       var xRange = d3.extent(data.map(function (d) { return d.date; }));
 
-      x.domain(xRange);
-      y.domain(d3.extent(data.map(function (d) { return d.price; })));
-      x2.domain(x.domain());
-      y2.domain(y.domain());
-
       var min = d3.min(data.map(function (d) { return d.price; }));
       var max = d3.max(data.map(function (d) { return d.price; }));
+
+      x.domain(xRange);
+      y.domain([min, max]);
+      x2.domain(x.domain());
+      y2.domain([min, max]);
+
+      console.log(y.domain(), y2.domain())
+
     }
     else { console.error("Data is undefined or not an array."); }
     //时间范围文本
@@ -159,16 +132,10 @@ export function linechart(data) {
         .tickSize(-width, 0, 0)
         .tickFormat(''));
 
-    //平均线图的路径元素
-    var averageChart = focus.append('path')
-      .datum(data)
-      .attr('class', 'chart__line chart__average--focus line')
-      .attr('d', averageLine);
-
     //为月温度线创建一个路径元素
     var temperatureChart = focus.append('path')
       .datum(data)
-      .attr('class', 'chart__line chart__price--focus line')
+      .attr('class', 'chart__line chart__average--focus line')
       .attr('d', temperatureLine);
 
     //确定x、y轴位置，并绘制
@@ -213,12 +180,14 @@ export function linechart(data) {
       .style('display', 'none')
       .attr('r', 2.5);
 
-    var averageTooltip = focus.append('g')
-      .attr('class', 'chart__tooltip--average')
-      .append('circle')
-      .style('display', 'none')
-      .attr('r', 2.5);
-
+    focus.selectAll('.country-dot')
+      .data(data)
+      .enter().append('circle') // 为每个数据点创建一个圆
+      .attr('class', 'country-dot') // 应用样式
+      .attr('cx', function (d) { return x(d.date); }) // 设置圆的x坐标
+      .attr('cy', function (d) { return y(d.price); }) // 设置圆的y坐标
+      .attr('r', 2.5); // 设置圆的半径
+    
     //当鼠标移动时触发的事件处理
     var mouseArea = svg.append('g')
       .attr('class', 'chart__mouse')
@@ -230,7 +199,6 @@ export function linechart(data) {
       .on('mouseover', function () {
         helper.style('display', null);
         priceTooltip.style('display', null);
-        // averageTooltip.style('display', null);
       })
       .on('mouseout', mouseout)
       .on('mousemove', mousemove);
@@ -265,11 +233,11 @@ export function linechart(data) {
       var d0 = data[i - 1];
       var d1 = data[i];
       var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
-      var tooltipContent = legendFormat(new Date(d.date)) + ' - Temperature: ' + d.price.toFixed(3) + "℃";
+      var tooltipContent = legendFormat(new Date(d.date)) + ' - Temperature: ' + parseFloat(d.price).toFixed(3) + "℃";
       priceTooltip.attr('transform', 'translate(' + x(d.date) + ',' + y(d.price) + ')');
       // 更新浮动文本框的位置和内容
       tooltip.transition()
-        .duration(200)
+        .duration(100)
         .style('opacity', 0.9);
 
       tooltip.html(tooltipContent)
@@ -280,7 +248,6 @@ export function linechart(data) {
     function mouseout() {
       helper.style('display', 'none');
       priceTooltip.style('display', 'none');
-      // averageTooltip.style('display', 'none');
       tooltip.transition()
         .duration(200)
         .style('opacity', 0);
@@ -288,9 +255,7 @@ export function linechart(data) {
 
     function brushed(event) {
       // 使用 d3.brushSelection 获取当前的刷选范围
-      if (!selection || selection[1][0] != 794) {
-        selection = d3.brushSelection(this) || null;
-      }
+      selection = d3.brushSelection(this) || null;
       if (selection && !selection[0].includes(NaN)) {
 
         // 提取水平方向的像素值范围
@@ -305,15 +270,22 @@ export function linechart(data) {
 
         // 更新图表
         temperatureChart.attr('d', temperatureLine);
-        averageChart.attr('d', averageLine);
         focus.select('.x.axis').call(xAxis);
         focus.select('.y.axis').call(yAxis);
+
+        focus.selectAll('.country-dot')
+          .attr('cx', function (d) { return x(d.date); })
+          .attr('cy', function (d) { return y(d.price); });
+
       }
       else {
         // 说明是reset，恢复日期范围到初始状态
         x.domain(d3.extent(data, function (d) { return d.date; }));
         y.domain([d3.min(data, function (d) { return d.price; }), d3.max(data, function (d) { return d.price; })]);
         range.text(legendFormat(x.domain()[0]) + ' - ' + legendFormat(x.domain()[1]));
+        focus.selectAll('.country-dot')
+          .attr('cx', function (d) { return x(d.date); })
+          .attr('cy', function (d) { return y(d.price); });
       }
     }
 
@@ -354,7 +326,6 @@ export function linechart(data) {
 
       // 更新图表
       temperatureChart.attr('d', temperatureLine);
-      averageChart.attr('d', averageLine);
       focus.select('.x.axis').call(xAxis);
       focus.select('.y.axis').call(yAxis);
 
@@ -372,7 +343,7 @@ export function linechart(data) {
     }
 
     //创建不同范围的按钮列表
-    var dateRange = ['6m', '1y', '5y', '10y', '50y']
+    var dateRange = ['5y', '10y', '20y', '50y']
     //使用循环遍历时间范围数组。获取当前循环迭代中的时间范围
     for (var i = 0, l = dateRange.length; i < l; i++) {
       var v = dateRange[i];
@@ -392,17 +363,14 @@ export function linechart(data) {
 
       // 根据所选的范围计算新的刷选区域的开始日期
       switch (range) {
-        case '6m':
-          ext.setMonth(ext.getMonth() - 6);
-          break;
-        case '1y':
-          ext.setFullYear(ext.getFullYear() - 1);
-          break;
         case '5y':
           ext.setFullYear(ext.getFullYear() - 5);
           break;
         case '10y':
           ext.setFullYear(ext.getFullYear() - 10);
+          break;
+        case '20y':
+          ext.setFullYear(ext.getFullYear() - 20);
           break;
         case '50y':
           ext.setFullYear(ext.getFullYear() - 50);
@@ -411,11 +379,10 @@ export function linechart(data) {
           break;
       }
 
-      var brushExtent = [x2(ext), x2(today)];
-      selection = [[x2(ext), 0], [x2(today), 140]]
+      selection = [[x2(ext), 0], [x2(today), 113]]
       
       // 使用 brush.move 来更新刷选区域
-      context.select('.brush').call(brush.move, brushExtent);
+      context.select('.brush').call(brush.move, selection);
       selection = [[0, 0], [0, 0]]
     }
   }

@@ -13,6 +13,7 @@ const pathGenerator = d3.geoPath().projection(projection);
 
 let countryTemperatureDataDiff = {};
 let colorScale; // 用于根据温度设定颜色的比例尺
+let worldmeta;
 
 // setting up the tip tool; 
 const tip = d3.tip()
@@ -25,7 +26,6 @@ const tip = d3.tip()
     });
 svg.call(tip);
 
-let worldmeta;
 let countryTemperatureData = {};
 
 function loadGeoData() {
@@ -36,7 +36,7 @@ function loadGeoData() {
 }
 
 function loadTemperatureData() {
-    d3.csv('data/kaggle/processed/countries-avg-temperature-by-month-1900-2012.csv').then(data => {
+    d3.csv('data/kaggle/processed/New_Environment_Temperature_change_E_All_Data_NOFLAG.csv').then(data => {
         data.forEach(d => {
             if (!countryTemperatureData[d.Country]) {
                 countryTemperatureData[d.Country] = [];
@@ -107,11 +107,12 @@ function drawMap() {
             const countryName = d.properties.name;
             const temperatureData = countryTemperatureData[countryName];
 
-            // console.log(temperatureData); // TODO: 绘制国家的气温折线图
+            console.log(temperatureData); // TODO: 绘制国家的气温折线图
             var chartContainer = document.getElementById('line-chart-container');
             
             if (chartContainer.style.display === 'block') {
-                // 请先关闭当前窗口
+                // 先关闭当前窗口
+
             }
             else {
                 chartContainer.style.display = 'block';

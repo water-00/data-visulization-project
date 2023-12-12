@@ -11,12 +11,20 @@ path {
 }
 
 #slider-container {
+    display: flex;
+    /* 使用 Flexbox 布局 */
+    align-items: center;
+    /* 垂直居中对齐 */
+    justify-content: space-between;
+    /* 元素之间保持平均分布 */
     position: absolute;
     bottom: 0;
+    left: 50%;
+    /* 水平居中 */
+    transform: translateX(-30%);
+    /* 偏移自身宽度的一半来确保真正的居中 */
     width: 65%;
-    justify-content: space-between;
-    /* 内容平均分布 */
-    margin: 0px 385px;
+    /* 宽度占屏幕宽度的 65% */
     padding: 1px;
     /* 减小padding减少白色空间 */
     background-color: #fff;
@@ -25,43 +33,53 @@ path {
     /* 添加圆角 */
 }
 
-#month-slider {
+#year-slider {
     flex-grow: 1;
     /* 滑块占据剩余空间 */
-    width: 80%;
-    margin-top: 10px;
-    margin-bottom: 23px;
-    margin-left: 30px;
+    margin: 10px 30px 23px 30px;
+    /* 上右下左的间距 */
 }
 
 #animate-button {
-    position: absolute;
+    margin: 10px 10px 23px 0px;
     padding: 5px 20px;
     background-color: #0066cc;
-    margin: -40px 695px;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    /* 保持按钮大小，不设置flex-grow */
+    /* 不再需要设置绝对位置和外边距 */
 }
-
-
-.slider-label {
+.slider-scale {
     position: absolute;
-    /* 绝对定位 */
+    width: 100%;
     bottom: -20px;
-    /* 根据实际情况调整，将标签下移以放置在滑块下方 */
-    white-space: nowrap;
-    /* 防止标签换行 */
-    display: block;
-    /* 将标签转换为块元素以应用左偏移量 */
-    text-align: center;
-    /* 文本居中 */
-    transform: translateX(-50%);
-    /* 修正标签位置，使其居中对齐 */
+    /* 根据需要调整以适配实际的滑块高度 */
 }
 
+.tick {
+    position: absolute;
+    display: block;
+    text-align: center;
+    margin-left: -1em;
+    margin-top: -10px;
+    width: 1em;
+    font-size: 10px;
+}
+
+
+.tick::before {
+    content: '';
+    position: absolute;
+    top: 0px;
+    /* 根据需要调整 */
+    left: 100%;
+    width: 1px;
+    height: 10px;
+    background-color: #000;
+    transform: translateX(-50%) translateY(-100%);
+    /* 这将使刻度线往上移动 */
+}
 #buttons-container {
     display: flex;
     flex-direction: column;

@@ -11,7 +11,7 @@ const g = svg.append('g').attr('id', 'maingroup')
 const projection = d3.geoMercator(); // 墨卡托投影。
 const pathGenerator = d3.geoPath().projection(projection);
 
-let tempMap = {}; // 存储国家和平均温度的映射
+let countryTemperatureDataDiff = {};
 let colorScale; // 用于根据温度设定颜色的比例尺
 
 // setting up the tip tool; 
@@ -19,8 +19,8 @@ const tip = d3.tip()
     .attr('class', 'd3-tip')
     .html(function (event, d) {
         const countryName = d.properties.name;
-        const avgTemp = tempMap[countryName];
-        const tempDisplay = avgTemp ? (parseFloat(avgTemp).toFixed(1) + '°C') : 'No data';
+        const tempChange = countryTemperatureDataDiff[countryName];
+        const tempDisplay = tempChange ? (parseFloat(tempChange).toFixed(2) + '°C') : 'No data';
         return `Country: ${countryName}<br>Temperature: ${tempDisplay}`;
     });
 svg.call(tip);
@@ -52,24 +52,25 @@ function updateMapColors() {
     g.selectAll('path')
         .data(worldmeta.features, d => d.properties.name)
         .attr('fill', d => {
-            const avgTemp = tempMap[d.properties.name];
-            return avgTemp ? colorScale(avgTemp) : '#ccc';
+            const tempChange = countryTemperatureDataDiff[d.properties.name];
+            return tempChange ? colorScale(tempChange) : '#ccc';
         });
 }
 
-function loadDataForMonth(month) {
-    const monthString = month < 10 ? `-0${month}-` : `-${month}-`;
-    d3.csv('data/kaggle/processed/countries-avg-temperature-by-month-2012.csv').then(tempData => {
-        const temperatureExtent = d3.extent(tempData, d => +d.AverageTemperature);
-        colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain(temperatureExtent.reverse());
 
-        tempData = tempData.filter(d => d.dt.includes(monthString));
-
+function loadDataForDiff(year) {
+    d3.csv('data/kaggle/processed/New_Environment_Temperature_change_E_All_Data_NOFLAG.csv').then(tempData => {
+        const temperatureDiffExtent = d3.extent(tempData, d => +d.TemperatureDifference);
+        colorScale = d3.scaleSequential(d3.interpolateOrRd).domain([0, 1.6]);
+        tempData = tempData.filter(d => +d.dt === year);
         tempData.forEach(function (d) {
-            tempMap[d.Country] = +d.AverageTemperature;
+            countryTemperatureDataDiff[d.Country] = +d.TemperatureDifference;
         });
 
+        // 使用该年份的数据更新地图颜色
         updateMapColors();
+    }).catch(error => {
+        console.error("Error loading temperature difference data:", error);
     });
 }
 
@@ -121,8 +122,8 @@ function drawMap() {
     // 更新已存在的路径元素
     paths.attr('fill', d => {
         // 根据需要更新颜色
-        const avgTemp = tempMap[d.properties.name];
-        return avgTemp ? colorScale(avgTemp) : '#ccc';
+        const tempChange = countryTemperatureDataDiff[d.properties.name];
+        return tempChange ? colorScale(tempChange) : '#ccc';
     });
 
     // 删除多余的路径元素
@@ -143,7 +144,7 @@ function drawLegend() {
         .attr('transform', 'translate(' + legendMargin.left + ',' + legendMargin.top + ')');
 
     const legendScale = d3.scaleLinear()
-        .domain(d3.extent(colorScale.domain()).reverse())
+        .domain(d3.extent(colorScale.domain()))
         .range([0, legendWidth]);
 
     legendSvg.append("defs")
@@ -161,15 +162,13 @@ function drawLegend() {
         .style("fill", "url(#gradient)");
 
     const legendAxis = d3.axisBottom(legendScale)
-        .ticks(5)
+        .ticks(6)
         .tickFormat(d => d3.format(".1f")(d) + '°C');
 
     legendSvg.append('g')
         .attr('transform', 'translate(0,' + legendHeight + ')')
         .call(legendAxis);
 }
-
-
 
 
 let dragStartCoords = [0, 0];
@@ -207,14 +206,9 @@ function dragEnd() {
 
 (function () {
     'use strict';
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    // Configuration and state variables
-    var config = {
-        // Add your configuration variables here
-    };
+    // state variables
     var state = {
-        selectedMonth: 1,
+        selectedYear: 1961,
         animationRunning: false,
         animationInterval: {}
         // Add more state variables as needed
@@ -225,35 +219,33 @@ function dragEnd() {
         loadGeoData().then(() => {
             drawMap().then(drawLegend); // 确保先绘制地图，然后绘制图例
         });
-        createMonthSlider();
+        createYearSlider();
         attachAnimateButtonEvent();
-        updateMapForMonth(1);
+        updateMapForDiff(1961)
     }
 
-    // Create month slider with jQuery UI
-    function createMonthSlider() {
-        $("#month-slider").slider({
-            min: 0, // 由于数组是从0开始的，因此最小值应该是0
-            max: 11, // 12个月，但是索引是从0开始的，所以最大值是11
-            value: state.selectedMonth - 1, // 将选中的月份减1以对应数组索引
-            create: function (event, ui) {
-                var slider = $(this);
-                var width = slider.width(); // 获取滑块的宽度
-                var handleWidth = slider.find('.ui-slider-handle').width(); // 获取handle的宽度
-                // 创建时为每个月份添加标签
-                months.forEach(function (month, index) {
-                    // 计算每个标签的左偏移量
-                    var left = (width / 11) * index - (handleWidth / 2) + 7;
-                    var label = $('<label>').addClass('slider-label').text(month).css('left', left);
-                    slider.append(label);
-                });
-            },
+    function createYearSlider() {
+        var min = 1961, max = 2019;
+
+        $("#year-slider").slider({
+            min: min,
+            max: max,
+            value: state.selectedYear,
             slide: function (event, ui) {
-                state.selectedMonth = ui.value + 1; // 加1因为你的状态是从1到12
-                updateMapForMonth(ui.value + 1); // 更新地图的函数也需要加1
+                state.selectedYear = ui.value;
+                updateMapForDiff(ui.value); // 更新地图的函数
+            },
+            create: function () {
+                var scale = $('#year-slider').append('<div class="slider-scale" />').find('.slider-scale');
+                for (var i = min; i <= max; i=i+4) {
+                    scale.append('<span class="tick" style="left:' + (i - min) / (max - min) * 100 + '%">' + i + '</span>');
+                }
             }
         });
     }
+
+
+
 
     // Attach event to the animate button
     function attachAnimateButtonEvent() {
@@ -266,12 +258,13 @@ function dragEnd() {
         });
     }
 
-    // Update map based on selected month
-    function updateMapForMonth(month) {
-        console.log("Update map for month: " + month);
-        // Add logic to update the map
-        loadDataForMonth(month)
+    function updateMapForDiff(year) {
+        console.log("Update map for year: " + year);
+
+        // 根据选中的年份更新地图颜色
+        loadDataForDiff(year);
     }
+
 
     // Start map animation
     function startAnimation() {
@@ -280,13 +273,14 @@ function dragEnd() {
             console.log("Start animation");
             // 开始动画，每隔5秒更新地图
             state.animationInterval = setInterval(function () {
-                state.selectedMonth++;
-                if (state.selectedMonth > 12) {
-                    state.selectedMonth = 1; // 如果超过12月，则重新开始
+                state.selectedYear++;
+                if (state.selectedYear > 2019) {
+                    // state.selectedYear = 1961; // 如果超过2019年，则重新开始
+                    stopAnimation();
                 }
-                updateMapForMonth(state.selectedMonth);
-                $("#month-slider").slider('value', state.selectedMonth - 1); // 更新滑块的位置
-            }, 1000);
+                updateMapForDiff(state.selectedYear);
+                $("#year-slider").slider('value', state.selectedYear);
+            }, 500);
         }
     }
     // Stop map animation

@@ -66,7 +66,7 @@ export function ice_minimum_extent(data) {
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("CO2 Monthly Average (ppm)");
+        .text("Million Square km");
 
     // 定义网格线生成器
     function make_x_gridlines() {

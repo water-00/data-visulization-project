@@ -110,10 +110,48 @@ path {
     /* Include padding and border in the width */
 }
 
+
 .side-button:hover {
     background-color: #88bff7;
     /* Slightly darker blue on hover */
 }
+
+#graph-buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* Align to the left */
+}
+
+.graph-button {
+    margin-bottom: 5px;
+    /* Space between buttons */
+    width: 150px;
+    /* Set a fixed width, adjust as needed */
+    padding: 7px 10px;
+    /* Add padding to increase button size */
+    cursor: pointer;
+    background-color: #ddc50b;
+    /* Light blue background */
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    color: #333;
+    /* Text color */
+    font-size: 12px;
+    /* Text size */
+    text-align: center;
+    /* Center the text */
+    box-sizing: border-box;
+    /* Include padding and border in the width */
+}
+
+
+.graph-button:hover {
+    background-color: #fade03;
+    /* Slightly darker blue on hover */
+}
+
 
 #line-chart-container {
     position: absolute;

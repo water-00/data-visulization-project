@@ -46,6 +46,19 @@ $(document).ready(function () {
             );
         }
     });
+
+    $('.graph-button').click(function () {
+        var buttonName = $(this).text()
+        switch (buttonName) {
+            case "Causes":
+                window.open("../heatmap-causes/Causes.html", "_blank"); // 打开 Causes 页面
+                break;
+
+            case "Results":
+                window.open("../heatmap-results/Results.html", "_blank"); // 打开 Results 页面
+                break;
+        }
+    });
 });
 
 function loadCSVData(filePath, callback) {

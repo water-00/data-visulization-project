@@ -368,7 +368,7 @@ const zScale = d3.scaleLinear().domain(zAxis).range([0, 300]);
 const colorScale = d3
   .scaleLinear()
   .domain([-1,-0.7,0.70, 1])
-     .range(["#b751d3f2","#ec7f98","#FFD467", "#F44334"]);
+    .range(["#1f77b4", "#add8e6", "#FFD467", "#F44334"]);
 
 const xWidth = xScale.bandwidth();
 const yHeight = yScale.bandwidth();
@@ -503,11 +503,11 @@ linearGradient
   linearGradient
   .append("stop")
   .attr("offset", "75%")
-  .attr("stop-color", "#ec7f98");
+    .attr("stop-color", "#add8e6");
 linearGradient
   .append("stop")
   .attr("offset", "100%")
-  .attr("stop-color", "#b751d3f2");//最低
+  .attr("stop-color", "#1f77b4");//最低
 
 linearGroup
   .append("rect")

@@ -261,7 +261,7 @@ function dragEnd() {
 
     function updateMapForDiff(year) {
         console.log("Update map for year: " + year);
-
+        document.getElementById('year-display').innerText = `Year: ${year}`;
         // 根据选中的年份更新地图颜色
         loadDataForDiff(year);
     }
@@ -274,14 +274,15 @@ function dragEnd() {
             console.log("Start animation");
             // 开始动画，每隔5秒更新地图
             state.animationInterval = setInterval(function () {
-                state.selectedYear++;
-                if (state.selectedYear > 2019) {
+                if (state.selectedYear >= 2019) {
                     // state.selectedYear = 1961; // 如果超过2019年，则重新开始
                     stopAnimation();
+                } else {
+                    state.selectedYear++;
                 }
                 updateMapForDiff(state.selectedYear);
                 $("#year-slider").slider('value', state.selectedYear);
-            }, 500);
+            }, 180);
         }
     }
     // Stop map animation

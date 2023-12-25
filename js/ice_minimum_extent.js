@@ -32,7 +32,7 @@ export function ice_minimum_extent(data) {
 
     // 设置 X 和 Y 轴的域
     x.domain(d3.extent(data, function (d) { return d.date; }));
-    y.domain(d3.extent(data, function (d) { return d.Extent; }));
+    y.domain([3, d3.max(data, function(d) { return d.Extent; })]);
 
     // 添加 X 轴
     svg.append("g")
